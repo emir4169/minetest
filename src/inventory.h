@@ -34,8 +34,8 @@ struct ItemStack
 {
 	ItemStack() = default;
 
-	ItemStack(const std::string &name_, u16 count_,
-			u16 wear, IItemDefManager *itemdef);
+	ItemStack(const std::string &name_, s16 count_,
+			s16 wear, IItemDefManager *itemdef);
 
 	~ItemStack() = default;
 
@@ -74,12 +74,12 @@ struct ItemStack
 		metadata.clear();
 	}
 
-	void add(u16 n)
+	void add(s16 n)
 	{
 		count += n;
 	}
 
-	void remove(u16 n)
+	void remove(s16 n)
 	{
 		assert(count >= n); // Pre-condition
 		count -= n;
@@ -88,15 +88,15 @@ struct ItemStack
 	}
 
 	// Maximum size of a stack
-	u16 getStackMax(const IItemDefManager *itemdef) const
+	s16 getStackMax(const IItemDefManager *itemdef) const
 	{
 		return itemdef->get(name).stack_max;
 	}
 
 	// Number of items that can be added to this stack
-	u16 freeSpace(const IItemDefManager *itemdef) const
+	s16 freeSpace(const IItemDefManager *itemdef) const
 	{
-		u16 max = getStackMax(itemdef);
+		s16 max = getStackMax(itemdef);
 		if (count >= max)
 			return 0;
 		return max - count;
@@ -178,10 +178,10 @@ struct ItemStack
 	// Takes some items.
 	// If there are not enough, takes as many as it can.
 	// Returns empty item if couldn't take any.
-	ItemStack takeItem(u32 takecount);
+	ItemStack takeItem(s32 takecount);
 
 	// Similar to takeItem, but keeps this ItemStack intact.
-	ItemStack peekItem(u32 peekcount) const;
+	ItemStack peekItem(s32 peekcount) const;
 
 	bool operator ==(const ItemStack &s) const
 	{
@@ -200,19 +200,19 @@ struct ItemStack
 		Properties
 	*/
 	std::string name = "";
-	u16 count = 0;
-	u16 wear = 0;
+	s16 count = 0;
+	s16 wear = 0;
 	ItemStackMetadata metadata;
 };
 
 class InventoryList
 {
 public:
-	InventoryList(const std::string &name, u32 size, IItemDefManager *itemdef);
+	InventoryList(const std::string &name, s32 size, IItemDefManager *itemdef);
 	~InventoryList() = default;
 	void clearItems();
-	void setSize(u32 newsize);
-	void setWidth(u32 newWidth);
+	void setSize(s32 newsize);
+	void setWidth(s32 newWidth);
 	void setName(const std::string &name);
 	void serialize(std::ostream &os, bool incremental) const;
 	void deSerialize(std::istream &is);
@@ -226,18 +226,18 @@ public:
 	}
 
 	const std::string &getName() const { return m_name; }
-	u32 getSize() const { return static_cast<u32>(m_items.size()); }
-	u32 getWidth() const { return m_width; }
+	s32 getSize() const { return static_cast<s32>(m_items.size()); }
+	s32 getWidth() const { return m_width; }
 	// Count used slots
-	u32 getUsedSlots() const;
+	s32 getUsedSlots() const;
 
 	// Get reference to item
-	const ItemStack &getItem(u32 i) const
+	const ItemStack &getItem(s32 i) const
 	{
 		assert(i < m_size); // Pre-condition
 		return m_items[i];
 	}
-	ItemStack &getItem(u32 i)
+	ItemStack &getItem(s32 i)
 	{
 		assert(i < m_size); // Pre-condition
 		return m_items[i];
@@ -245,9 +245,9 @@ public:
 	// Get reference to all items
 	const std::vector<ItemStack> &getItems() const { return m_items; }
 	// Returns old item. Parameter can be an empty item.
-	ItemStack changeItem(u32 i, const ItemStack &newitem);
+	ItemStack changeItem(s32 i, const ItemStack &newitem);
 	// Delete item
-	void deleteItem(u32 i);
+	void deleteItem(s32 i);
 
 	// Adds an item to a suitable place. Returns leftover item (possibly empty).
 	ItemStack addItem(const ItemStack &newitem);
@@ -256,12 +256,12 @@ public:
 	// If cannot be added at all, returns the item back.
 	// If can be added partly, decremented item is returned back.
 	// If can be added fully, empty item is returned.
-	ItemStack addItem(u32 i, const ItemStack &newitem);
+	ItemStack addItem(s32 i, const ItemStack &newitem);
 
 	// Checks whether the item could be added to the given slot
 	// If restitem is non-NULL, it receives the part of newitem that
 	// would be left over after adding.
-	bool itemFits(const u32 i, const ItemStack &newitem,
+	bool itemFits(const s32 i, const ItemStack &newitem,
 			ItemStack *restitem = NULL) const;
 
 	// Checks whether there is room for a given item
@@ -282,17 +282,17 @@ public:
 	// Takes some items from a slot.
 	// If there are not enough, takes as many as it can.
 	// Returns empty item if couldn't take any.
-	ItemStack takeItem(u32 i, u32 takecount);
+	ItemStack takeItem(s32 i, s32 takecount);
 
 	// Move an item to a different list (or a different stack in the same list)
 	// count is the maximum number of items to move (0 for everything)
 	// returns the moved stack
-	ItemStack moveItem(u32 i, InventoryList *dest, u32 dest_i,
-		u32 count = 0, bool swap_if_needed = true, bool *did_swap = NULL);
+	ItemStack moveItem(s32 i, InventoryList *dest, s32 dest_i,
+		s32 count = 0, bool swap_if_needed = true, bool *did_swap = NULL);
 
 	// like moveItem, but without a fixed destination index
 	// also with optional rollback recording
-	void moveItemSomewhere(u32 i, InventoryList *dest, u32 count);
+	void moveItemSomewhere(s32 i, InventoryList *dest, s32 count);
 
 	inline bool checkModified() const { return m_dirty; }
 	inline void setModified(bool dirty = true) { m_dirty = dirty; }
@@ -318,8 +318,8 @@ public:
 private:
 	std::vector<ItemStack> m_items;
 	std::string m_name;
-	u32 m_size; // always the same as m_items.size()
-	u32 m_width = 0;
+	s32 m_size; // always the same as m_items.size()
+	s32 m_width = 0;
 	IItemDefManager *m_itemdef;
 	bool m_dirty = true;
 	int m_resize_locks = 0; // Lua callback sanity
@@ -346,7 +346,7 @@ public:
 	void deSerialize(std::istream &is);
 
 	// Creates a new list if none exists or truncates existing lists
-	InventoryList * addList(const std::string &name, u32 size);
+	InventoryList * addList(const std::string &name, s32 size);
 	InventoryList * getList(const std::string &name);
 	const InventoryList * getList(const std::string &name) const;
 	const std::vector<InventoryList *> &getLists() const { return m_lists; }
