@@ -89,13 +89,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 // Size of player's main inventory
-#define PLAYER_INVENTORY_SIZE (8 * 4)
+#define PLAYER_INVENTORY_SIZE (8 * 8)
 
 // Default maximum health points of a player
 #define PLAYER_MAX_HP_DEFAULT 20
 
 // Default maximal breath of a player
-#define PLAYER_MAX_BREATH_DEFAULT 10
+#define PLAYER_MAX_BREATH_DEFAULT 20
 
 // Number of different files to try to save a player to if the first fails
 // (because of a case-insensitive filesystem)
