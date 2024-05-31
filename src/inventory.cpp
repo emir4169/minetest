@@ -43,8 +43,8 @@ static content_t content_translate_from_19_to_internal(content_t c_from)
 	return c_from;
 }
 
-ItemStack::ItemStack(const std::string &name_, u16 count_,
-		u16 wear_, IItemDefManager *itemdef) :
+ItemStack::ItemStack(const std::string &name_, s16 count_,
+		s16 wear_, IItemDefManager *itemdef) :
 	name(itemdef->getAlias(name_)),
 	count(count_),
 	wear(wear_)
@@ -100,9 +100,9 @@ void ItemStack::deSerialize(std::istream &is, IItemDefManager *itemdef)
 	{
 		// Obsoleted on 2011-07-30
 
-		u16 material;
+		s16 material;
 		is>>material;
-		u16 materialcount;
+		s16 materialcount;
 		is>>materialcount;
 		// Convert old materials
 		if(material <= 0xff)
@@ -123,9 +123,9 @@ void ItemStack::deSerialize(std::istream &is, IItemDefManager *itemdef)
 	{
 		// Obsoleted on 2011-11-16
 
-		u16 material;
+		s16 material;
 		is>>material;
-		u16 materialcount;
+		s16 materialcount;
 		is>>materialcount;
 		if(material > 0xfff)
 			throw SerializationError("Too large material number");
@@ -345,7 +345,7 @@ ItemStack ItemStack::addItem(ItemStack newitem, IItemDefManager *itemdef)
 	// the rest.
 	else
 	{
-		u16 freespace = freeSpace(itemdef);
+		s16 freespace = freeSpace(itemdef);
 		add(freespace);
 		newitem.remove(freespace);
 	}
@@ -382,7 +382,7 @@ bool ItemStack::itemFits(ItemStack newitem,
 	// Else the item does not fit fully. Return the rest.
 	else
 	{
-		u16 freespace = freeSpace(itemdef);
+		s16 freespace = freeSpace(itemdef);
 		newitem.remove(freespace);
 	}
 
@@ -399,27 +399,15 @@ bool ItemStack::stacksWith(const ItemStack &other) const
 			this->metadata == other.metadata);
 }
 
-ItemStack ItemStack::takeItem(u32 takecount)
+ItemStack ItemStack::takeItem(s32 takecount)
 {
-	if(takecount == 0 || count == 0)
-		return ItemStack();
-
 	ItemStack result = *this;
-	if(takecount >= count)
-	{
-		// Take all
-		clear();
-	}
-	else
-	{
-		// Take part
-		remove(takecount);
-		result.count = takecount;
-	}
+	remove(takecount);
+	result.count = takecount;
 	return result;
 }
 
-ItemStack ItemStack::peekItem(u32 peekcount) const
+ItemStack ItemStack::peekItem(s32 peekcount) const
 {
 	if(peekcount == 0 || count == 0)
 		return ItemStack();
@@ -434,7 +422,7 @@ ItemStack ItemStack::peekItem(u32 peekcount) const
 	Inventory
 */
 
-InventoryList::InventoryList(const std::string &name, u32 size, IItemDefManager *itemdef):
+InventoryList::InventoryList(const std::string &name, s32 size, IItemDefManager *itemdef):
 	m_name(name),
 	m_size(size),
 	m_itemdef(itemdef)
@@ -446,14 +434,14 @@ void InventoryList::clearItems()
 {
 	m_items.clear();
 
-	for (u32 i=0; i < m_size; i++) {
+	for (s32 i=0; i < m_size; i++) {
 		m_items.emplace_back();
 	}
 
 	setModified();
 }
 
-void InventoryList::setSize(u32 newsize)
+void InventoryList::setSize(s32 newsize)
 {
 	if (newsize == m_items.size())
 		return;
@@ -466,7 +454,7 @@ void InventoryList::setSize(u32 newsize)
 	setModified();
 }
 
-void InventoryList::setWidth(u32 newwidth)
+void InventoryList::setWidth(s32 newwidth)
 {
 	m_width = newwidth;
 	setModified();
@@ -505,7 +493,7 @@ void InventoryList::deSerialize(std::istream &is)
 	//is.imbue(std::locale("C"));
 	setModified();
 
-	u32 item_i = 0;
+	s32 item_i = 0;
 	m_width = 0;
 
 	while (is.good()) {
@@ -578,16 +566,16 @@ bool InventoryList::operator == (const InventoryList &other) const
 		return false;
 	if(m_name != other.m_name)
 		return false;
-	for (u32 i = 0; i < m_items.size(); i++)
+	for (s32 i = 0; i < m_items.size(); i++)
 		if (m_items[i] != other.m_items[i])
 			return false;
 
 	return true;
 }
 
-u32 InventoryList::getUsedSlots() const
+s32 InventoryList::getUsedSlots() const
 {
-	u32 num = 0;
+	s32 num = 0;
 	for (const auto &m_item : m_items) {
 		if (!m_item.empty())
 			num++;
@@ -595,7 +583,7 @@ u32 InventoryList::getUsedSlots() const
 	return num;
 }
 
-ItemStack InventoryList::changeItem(u32 i, const ItemStack &newitem)
+ItemStack InventoryList::changeItem(s32 i, const ItemStack &newitem)
 {
 	if(i >= m_items.size())
 		return newitem;
@@ -608,7 +596,7 @@ ItemStack InventoryList::changeItem(u32 i, const ItemStack &newitem)
 	return olditem;
 }
 
-void InventoryList::deleteItem(u32 i)
+void InventoryList::deleteItem(s32 i)
 {
 	assert(i < m_items.size()); // Pre-condition
 	m_items[i].clear();
@@ -625,7 +613,7 @@ ItemStack InventoryList::addItem(const ItemStack &newitem_)
 	/*
 		First try to find if it could be added to some existing items
 	*/
-	for(u32 i=0; i<m_items.size(); i++)
+	for(s32 i=0; i<m_items.size(); i++)
 	{
 		// Ignore empty slots
 		if(m_items[i].empty())
@@ -639,7 +627,7 @@ ItemStack InventoryList::addItem(const ItemStack &newitem_)
 	/*
 		Then try to add it to empty slots
 	*/
-	for(u32 i=0; i<m_items.size(); i++)
+	for(s32 i=0; i<m_items.size(); i++)
 	{
 		// Ignore unempty slots
 		if(!m_items[i].empty())
@@ -654,7 +642,7 @@ ItemStack InventoryList::addItem(const ItemStack &newitem_)
 	return newitem;
 }
 
-ItemStack InventoryList::addItem(u32 i, const ItemStack &newitem)
+ItemStack InventoryList::addItem(s32 i, const ItemStack &newitem)
 {
 	if(i >= m_items.size())
 		return newitem;
@@ -665,7 +653,7 @@ ItemStack InventoryList::addItem(u32 i, const ItemStack &newitem)
 	return leftover;
 }
 
-bool InventoryList::itemFits(const u32 i, const ItemStack &newitem,
+bool InventoryList::itemFits(const s32 i, const ItemStack &newitem,
 		ItemStack *restitem) const
 {
 	if(i >= m_items.size())
@@ -682,7 +670,7 @@ bool InventoryList::roomForItem(const ItemStack &item_) const
 {
 	ItemStack item = item_;
 	ItemStack leftover;
-	for(u32 i=0; i<m_items.size(); i++)
+	for(s32 i=0; i<m_items.size(); i++)
 	{
 		if(itemFits(i, item, &leftover))
 			return true;
@@ -693,7 +681,7 @@ bool InventoryList::roomForItem(const ItemStack &item_) const
 
 bool InventoryList::containsItem(const ItemStack &item, bool match_meta) const
 {
-	u32 count = item.count;
+	s32 count = item.count;
 	if (count == 0)
 		return true;
 
@@ -715,7 +703,7 @@ ItemStack InventoryList::removeItem(const ItemStack &item)
 	ItemStack removed;
 	for (auto i = m_items.rbegin(); i != m_items.rend(); ++i) {
 		if (i->name == item.name) {
-			u32 still_to_remove = item.count - removed.count;
+			s32 still_to_remove = item.count - removed.count;
 			ItemStack leftover = removed.addItem(i->takeItem(still_to_remove),
 					m_itemdef);
 			// Allow oversized stacks
@@ -730,7 +718,7 @@ ItemStack InventoryList::removeItem(const ItemStack &item)
 	return removed;
 }
 
-ItemStack InventoryList::takeItem(u32 i, u32 takecount)
+ItemStack InventoryList::takeItem(s32 i, s32 takecount)
 {
 	if(i >= m_items.size())
 		return ItemStack();
@@ -741,7 +729,7 @@ ItemStack InventoryList::takeItem(u32 i, u32 takecount)
 	return taken;
 }
 
-void InventoryList::moveItemSomewhere(u32 i, InventoryList *dest, u32 count)
+void InventoryList::moveItemSomewhere(s32 i, InventoryList *dest, s32 count)
 {
 	// Take item from source list
 	ItemStack item1;
@@ -764,8 +752,8 @@ void InventoryList::moveItemSomewhere(u32 i, InventoryList *dest, u32 count)
 	}
 }
 
-ItemStack InventoryList::moveItem(u32 i, InventoryList *dest, u32 dest_i,
-		u32 count, bool swap_if_needed, bool *did_swap)
+ItemStack InventoryList::moveItem(s32 i, InventoryList *dest, s32 dest_i,
+		s32 count, bool swap_if_needed, bool *did_swap)
 {
 	ItemStack moved;
 	if (this == dest && i == dest_i)
@@ -872,7 +860,7 @@ bool Inventory::operator == (const Inventory &other) const
 	if(m_lists.size() != other.m_lists.size())
 		return false;
 
-	for(u32 i=0; i<m_lists.size(); i++)
+	for(s32 i=0; i<m_lists.size(); i++)
 	{
 		if(*m_lists[i] != *other.m_lists[i])
 			return false;
@@ -926,7 +914,7 @@ void Inventory::deSerialize(std::istream &is)
 
 		if (name == "List") {
 			std::string listname;
-			u32 listsize;
+			s32 listsize;
 
 			std::getline(iss, listname, ' ');
 			iss>>listsize;
@@ -968,7 +956,7 @@ void Inventory::deSerialize(std::istream &is)
 	throw SerializationError(ss.str());
 }
 
-InventoryList * Inventory::addList(const std::string &name, u32 size)
+InventoryList * Inventory::addList(const std::string &name, s32 size)
 {
 	setModified();
 
@@ -1026,7 +1014,7 @@ const InventoryList *Inventory::getList(const std::string &name) const
 
 s32 Inventory::getListIndex(const std::string &name) const
 {
-	for(u32 i=0; i<m_lists.size(); i++)
+	for(s32 i=0; i<m_lists.size(); i++)
 	{
 		if(m_lists[i]->getName() == name)
 			return i;
