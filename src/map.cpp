@@ -142,16 +142,6 @@ MapNode Map::getNode(v3s16 p, bool *is_valid_position)
 static void set_node_in_block(const NodeDefManager *nodedef, MapBlock *block,
 		v3s16 relpos, MapNode n)
 {
-	// Never allow placing CONTENT_IGNORE, it causes problems
-	if(n.getContent() == CONTENT_IGNORE){
-		v3s16 blockpos = block->getPos();
-		v3s16 p = blockpos * MAP_BLOCKSIZE + relpos;
-		errorstream<<"Not allowing to place CONTENT_IGNORE"
-				<<" while trying to replace \""
-				<<nodedef->get(block->getNodeNoCheck(relpos)).name
-				<<"\" at "<<p<<" (block "<<blockpos<<")"<<std::endl;
-		return;
-	}
 	block->setNodeNoCheck(relpos, n);
 }
 
